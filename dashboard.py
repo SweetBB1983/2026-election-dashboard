@@ -95,38 +95,43 @@ for idx, (name, handle) in enumerate(bsky_analysts.items()):
 
 st.divider()
 
-# 4. Live Reddit Election Hubs (Public JSON, No Token Needed)
+# 4. Live Reddit Election Hubs (RSS Feeds - Bypasses Datacenter IP 429 Blocks)
+import xml.etree.ElementTree as ET
+
 st.subheader("💬 Live Reddit Communities")
 st.caption("Latest breaking submissions from top election discussion subreddits.")
 
 subreddits = {
     "r/VoteDEM": "VoteDEM",
-    "r/elections": "elections",
+    "r/fivethirtyeight": "538",
     "r/PoliticalDiscussion": "PoliticalDiscussion"
+    "r/politics": "Politics"
 }
 
 reddit_cols = st.columns(len(subreddits))
-
-# Custom user-agent prevents Reddit 429 ratelimits on public JSON
-headers = {"User-Agent": "ElectionDashboardBot/1.0 (by /u/ElectionObserver)"}
+headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
 for idx, (sub_title, sub_name) in enumerate(subreddits.items()):
     with reddit_cols[idx]:
         st.markdown(f"**{sub_title}**")
         try:
-            url = f"https://www.reddit.com/r/{sub_name}/new.json?limit=3"
+            url = f"https://www.reddit.com/r/{sub_name}/new.rss"
             r = requests.get(url, headers=headers, timeout=5)
             if r.status_code == 200:
-                posts = r.json().get("data", {}).get("children", [])
-                for p in posts[:3]:
-                    pdata = p.get("data", {})
-                    title = pdata.get("title", "Untitled")
-                    permalink = f"https://www.reddit.com{pdata.get('permalink', '')}"
-                    score = pdata.get("score", 0)
-                    comments = pdata.get("num_comments", 0)
-                    st.markdown(f"• [{title}]({permalink})")
-                    st.caption(f"▲ {score} upvotes | 💬 {comments} comments")
+                root = ET.fromstring(r.content)
+                # Atom feed entries namespace
+                namespace = {'atom': 'http://www.w3.org/2005/Atom'}
+                entries = root.findall('atom:entry', namespace)
+                
+                if entries:
+                    for entry in entries[:3]:
+                        title = entry.find('atom:title', namespace).text
+                        link = entry.find('atom:link', namespace).attrib.get('href', '#')
+                        st.markdown(f"• [{title}]({link})")
+                else:
+                    st.info("No recent posts found.")
             else:
-                st.warning("Subreddit temporarily rate-limited.")
+                st.warning(f"Reddit feed unavailable (Code {r.status_code}).")
         except Exception:
             st.error("Error loading subreddit.")
+
