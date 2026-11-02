@@ -75,3 +75,41 @@ analysts = {
     "Adam Carlson": "admcrlsn",
     "Simon Rosenberg": "SimonWDC"
 }
+
+selected_name = st.selectbox("Choose an analyst feed:", list(analysts.keys()))
+selected_handle = analysts[selected_name]
+
+# Secure input for the API Bearer Token
+bearer_token = st.text_input(
+    "Enter your X API Bearer Token to view live tweets:", 
+    value="AAAAAAAAAAAAAAAAAAAAAN%2B4AAIAAAAAqrVyx9M9pWqVNFxQoEpnKeB7iUg%3DiWJscQhyflYz39SEGsEJU53sm3o70jz8XhXEuQnA8FCF14XpAi",
+    type="password"
+)
+
+if bearer_token:
+    headers = {"Authorization": f"Bearer {bearer_token}"}
+    
+    import requests
+    # Step 1: Look up the user's hidden Twitter ID
+    user_url = f"https://api.twitter.com/2/users/by/username/{selected_handle}"
+    user_res = requests.get(user_url, headers=headers)
+    
+    if user_res.status_code == 200:
+        user_id = user_res.json()["data"]["id"]
+        
+        # Step 2: Fetch their single latest tweet
+        tweet_url = f"https://api.twitter.com/2/users/{user_id}/tweets?max_results=5"
+        tweet_res = requests.get(tweet_url, headers=headers)
+        
+        if tweet_res.status_code == 200 and "data" in tweet_res.json():
+            latest_tweet = tweet_res.json()["data"][0]["text"]
+            
+            # Display it cleanly in a Streamlit callout box
+            st.info(f"**Latest from @{selected_handle}:**\n\n{latest_tweet}")
+            st.link_button("View full thread on X ↗", f"https://twitter.com/{selected_handle}")
+        else:
+            st.error(f"Failed to fetch tweets for @{selected_handle}. They may not have recent tweets or the API rate limit was hit.")
+    else:
+        st.error("Invalid API Token or user not found.")
+else:
+    st.warning("⚠️ **API Token Required:** Please provide your X Bearer Token above.")
