@@ -62,7 +62,7 @@ for i, (state, url) in enumerate(sos_links.items()):
 
 st.divider()
 
-# Twitter / X Embeds via Selectbox
+# Twitter / X Embeds via Selectbox (Privacy-Friendly via XXCancel)
 st.subheader("🐦 Live Election Analysts & Forecasters")
 st.markdown("Track breaking calls and analysis from major desks and independent prognosticators.")
 
@@ -79,18 +79,6 @@ analysts = {
 selected_name = st.selectbox("Choose an analyst feed:", list(analysts.keys()))
 selected_handle = analysts[selected_name]
 
-# A complete HTML document ensures the Twitter Javascript executes properly
-html = f"""
-<!DOCTYPE html>
-<html>
-  <head>
-    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-  </head>
-  <body style="margin: 0; padding: 0; font-family: sans-serif;">
-    <a class="twitter-timeline" data-tweet-limit="1" href="https://twitter.com/{selected_handle}?ref_src=twsrc%5Etfw">
-        Tweets by {selected_handle}
-    </a>
-  </body>
-</html>
-"""
-components.html(html, height=450, scrolling=True)
+# Use Streamlit's native iframe to embed the XXCancel proxy feed
+# This bypasses official Twitter API blocks and renders the feed directly
+components.iframe(f"https://xxcancel.com/{selected_handle}", height=600, scrolling=True)
