@@ -62,14 +62,41 @@ for i, (state, url) in enumerate(sos_links.items()):
 
 st.divider()
 
-# Twitter / X Embeds
-st.subheader("🐦 Live Twitter / X Feeds")
-col1, col2 = st.columns(2)
+# Twitter / X Embeds via Tabs
+st.subheader("🐦 Live Election Analysts & Forecasters")
+st.markdown("Track breaking calls and analysis from major desks and independent prognosticators.")
 
-with col1:
-    st.markdown("#### Decision Desk HQ")
-    components.html('''<a class="twitter-timeline" data-height="600" data-theme="light" href="https://twitter.com/DecisionDeskHQ?ref_src=twsrc%5Etfw">Tweets by DecisionDeskHQ</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>''', height=620, scrolling=True)
+# Create tabs for clean organization
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "Decision Desk HQ", 
+    "Cook Political Report", 
+    "Dave Wasserman", 
+    "Nate Silver", 
+    "Adam Carlson", 
+    "Simon Rosenberg"
+])
 
-with col2:
-    st.markdown("#### Cook Political Report")
-    components.html('''<a class="twitter-timeline" data-height="600" data-theme="light" href="https://twitter.com/CookPolitical?ref_src=twsrc%5Etfw">Tweets by CookPolitical</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>''', height=620, scrolling=True)
+def embed_twitter(handle, height=600):
+    html = f'''
+    <a class="twitter-timeline" data-height="{height}" data-theme="light" href="https://twitter.com/{handle}?ref_src=twsrc%5Etfw">Tweets by {handle}</a> 
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    '''
+    components.html(html, height=height+20, scrolling=True)
+
+with tab1:
+    embed_twitter("DecisionDeskHQ")
+
+with tab2:
+    embed_twitter("CookPolitical")
+
+with tab3:
+    embed_twitter("Redistrict") # Dave Wasserman's handle
+
+with tab4:
+    embed_twitter("NateSilver538")
+
+with tab5:
+    embed_twitter("admcrlsn") # Adam Carlson's handle
+
+with tab6:
+    embed_twitter("SimonWDC") # Simon Rosenberg's handle
