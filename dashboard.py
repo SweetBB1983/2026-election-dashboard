@@ -62,42 +62,35 @@ for i, (state, url) in enumerate(sos_links.items()):
 
 st.divider()
 
-# Twitter / X Embeds via Tabs
+# Twitter / X Embeds via Selectbox
 st.subheader("🐦 Live Election Analysts & Forecasters")
 st.markdown("Track breaking calls and analysis from major desks and independent prognosticators.")
 
-# Create tabs for clean organization
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "Decision Desk HQ", 
-    "Cook Political Report", 
-    "Dave Wasserman", 
-    "Nate Silver", 
-    "Adam Carlson", 
-    "Simon Rosenberg"
-])
+analysts = {
+    "Decision Desk HQ": "DecisionDeskHQ",
+    "Cook Political Report": "CookPolitical",
+    "Dave Wasserman": "Redistrict",
+    "Nate Silver": "NateSilver538",
+    "Adam Carlson": "admcrlsn",
+    "Simon Rosenberg": "SimonWDC"
+}
 
-def embed_twitter_latest(handle, height=300):
-    # Added data-tweet-limit="1" to restrict the embed to only the single latest tweet
-    html = f'''
-    <a class="twitter-timeline" data-tweet-limit="1" data-height="{height}" data-theme="light" href="https://twitter.com/{handle}?ref_src=twsrc%5Etfw">Tweets by {handle}</a> 
+# Using a selectbox avoids the Streamlit "hidden tab iframe" rendering bug
+selected_name = st.selectbox("Choose an analyst feed:", list(analysts.keys()))
+selected_handle = analysts[selected_name]
+
+# A complete HTML document ensures the Twitter Javascript executes properly
+html = f"""
+<!DOCTYPE html>
+<html>
+  <head>
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    '''
-    components.html(html, height=height+20, scrolling=False)
-
-with tab1:
-    embed_twitter_latest("DecisionDeskHQ")
-
-with tab2:
-    embed_twitter_latest("CookPolitical")
-
-with tab3:
-    embed_twitter_latest("Redistrict") # Dave Wasserman's handle
-
-with tab4:
-    embed_twitter_latest("NateSilver538")
-
-with tab5:
-    embed_twitter_latest("admcrlsn") # Adam Carlson's handle
-
-with tab6:
-    embed_twitter_latest("SimonWDC") # Simon Rosenberg's handle
+  </head>
+  <body style="margin: 0; padding: 0; font-family: sans-serif;">
+    <a class="twitter-timeline" data-tweet-limit="1" href="https://twitter.com/{selected_handle}?ref_src=twsrc%5Etfw">
+        Tweets by {selected_handle}
+    </a>
+  </body>
+</html>
+"""
+components.html(html, height=450, scrolling=True)
