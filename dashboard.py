@@ -104,7 +104,7 @@ st.caption("Latest breaking submissions from top election discussion subreddits.
 subreddits = {
     "r/VoteDEM": "VoteDEM",
     "r/fivethirtyeight": "538",
-    "r/PoliticalDiscussion": "PoliticalDiscussion"
+    "r/PoliticalDiscussion": "PoliticalDiscussion",
     "r/politics": "Politics"
 }
 
