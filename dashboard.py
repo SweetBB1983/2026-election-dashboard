@@ -76,27 +76,28 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "Simon Rosenberg"
 ])
 
-def embed_twitter(handle, height=600):
+def embed_twitter_latest(handle, height=300):
+    # Added data-tweet-limit="1" to restrict the embed to only the single latest tweet
     html = f'''
-    <a class="twitter-timeline" data-height="{height}" data-theme="light" href="https://twitter.com/{handle}?ref_src=twsrc%5Etfw">Tweets by {handle}</a> 
+    <a class="twitter-timeline" data-tweet-limit="1" data-height="{height}" data-theme="light" href="https://twitter.com/{handle}?ref_src=twsrc%5Etfw">Tweets by {handle}</a> 
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
     '''
-    components.html(html, height=height+20, scrolling=True)
+    components.html(html, height=height+20, scrolling=False)
 
 with tab1:
-    embed_twitter("DecisionDeskHQ")
+    embed_twitter_latest("DecisionDeskHQ")
 
 with tab2:
-    embed_twitter("CookPolitical")
+    embed_twitter_latest("CookPolitical")
 
 with tab3:
-    embed_twitter("Redistrict") # Dave Wasserman's handle
+    embed_twitter_latest("Redistrict") # Dave Wasserman's handle
 
 with tab4:
-    embed_twitter("NateSilver538")
+    embed_twitter_latest("NateSilver538")
 
 with tab5:
-    embed_twitter("admcrlsn") # Adam Carlson's handle
+    embed_twitter_latest("admcrlsn") # Adam Carlson's handle
 
 with tab6:
-    embed_twitter("SimonWDC") # Simon Rosenberg's handle
+    embed_twitter_latest("SimonWDC") # Simon Rosenberg's handle
