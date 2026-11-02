@@ -65,8 +65,8 @@ bsky_analysts = {
     "Dave Wasserman": "redistrict.bsky.social",
     "Simon Rosenberg": "simonwdc.bsky.social",
     "Decision Desk HQ": "decisiondeskhq.bsky.social",
-    "G. Elliott Morris": "gelliottmorris.bsky.social",
-    "Inside Elections": "insideelections.bsky.social"
+    "G. Elliott Morris": "gelliottmorris.com",       # Verified custom domain handle
+    "Jacob Rubashkin (Inside Elections)": "rubashkin.bsky.social" # Inside Elections editor
 }
 
 # Display in a clean 3x2 grid
