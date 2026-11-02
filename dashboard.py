@@ -70,4 +70,8 @@ st.markdown("Track breaking calls and analysis from major desks and independent 
 analysts = {
     "Decision Desk HQ": "DecisionDeskHQ",
     "Cook Political Report": "CookPolitical",
-    "Dave
+    "Dave Wasserman": "Redistrict",
+    "Nate Silver": "NateSilver538",
+    "Adam Carlson": "admcrlsn",
+    "Simon Rosenberg": "SimonWDC"
+}
