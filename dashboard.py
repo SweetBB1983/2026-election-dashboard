@@ -56,30 +56,36 @@ for i, (state, url) in enumerate(sos_links.items()):
 
 st.divider()
 
-# 3. Live Bluesky Analyst Feeds (Completely Free & Open Public API)
-st.subheader("🦋 Live Election Analysts (via Bluesky)")
-st.caption("Latest breaking posts pulled directly from the open AT Protocol public network.")
+# 3. Live Bluesky Analyst Feeds (12 Tracked Prognosticators & Analysts)
+st.subheader("🦋 Live Election Analysts & Handicappers (via Bluesky)")
+st.caption("Latest breaking posts pulled live via Bluesky's free, unauthenticated AT Protocol public API.")
 
 bsky_analysts = {
-    "Nate Silver": "natesilver.bsky.social",
-    "Dave Wasserman": "redistrict.bsky.social",
-    "Simon Rosenberg": "simonwdc.bsky.social",
+    "Cook Political Report": "cookpolitical.com",
     "Decision Desk HQ": "decisiondeskhq.bsky.social",
-    "G. Elliott Morris": "gelliottmorris.com",       # Verified custom domain handle
-    "Jacob Rubashkin (Inside Elections)": "rubashkin.bsky.social" # Inside Elections editor
+    "Dave Wasserman": "redistrict.bsky.social",
+    "Kyle Kondik (Sabato's Crystal Ball)": "kkondik.bsky.social",
+    "Geoffrey Skelley (DDHQ)": "geoffreyskelley.com",
+    "Jacob Rubashkin (Inside Elections)": "rubashkin.bsky.social",
+    "G. Elliott Morris (50+1)": "gelliottmorris.com",
+    "Nate Silver": "natesilver.bsky.social",
+    "Taniel (Bolts Mag)": "taniel.bsky.social",
+    "Adam Carlson": "admcrlsn.bsky.social",
+    "Kyle Griffin": "kylegriffin1.bsky.social",
+    "Simon Rosenberg": "simonwdc.bsky.social"
 }
 
-# Display in a clean 3x2 grid
+# Distribute across 3 columns evenly
 analyst_items = list(bsky_analysts.items())
-row1 = st.columns(3)
-row2 = st.columns(3)
-all_cols = row1 + row2
+cols = st.columns(3)
 
 for idx, (name, handle) in enumerate(analyst_items):
-    with all_cols[idx]:
-        st.markdown(f"### {name}")
+    col = cols[idx % 3]
+    with col:
+        st.markdown(f"#### {name}")
         st.caption(f"[@{handle}](https://bsky.app/profile/{handle})")
         try:
+            # Query the public Bluesky endpoint for top-level posts (excluding pure replies)
             api_url = f"https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor={handle}&limit=3&filter=posts_no_replies"
             r = requests.get(api_url, timeout=5)
             if r.status_code == 200:
@@ -92,30 +98,31 @@ for idx, (name, handle) in enumerate(analyst_items):
                     st.info(f"{post_text}\n\n*🕒 {created_at} UTC*")
                     st.link_button("View on Bluesky ↗", f"https://bsky.app/profile/{handle}")
                 else:
-                    st.info("No recent top-level posts.")
+                    st.info("No recent posts found.")
             else:
                 st.warning(f"Feed unavailable (HTTP {r.status_code})")
         except Exception:
             st.error("Error retrieving feed.")
+        st.write("") # Spacing between cards
 
 st.divider()
 
-# 4. Direct Discussion Hubs (Safe from 429 IP Blocks)
+# 4. Direct Discussion Hubs
 st.subheader("💬 Community Election Hubs")
-st.caption("Direct links to active live-threads and election communities.")
+st.caption("Quick links to active live election night megathreads.")
 
 hub_cols = st.columns(3)
 with hub_cols[0]:
     st.markdown("### r/VoteDEM")
-    st.markdown("Discussion, canvassing reports, and live election night megathreads.")
+    st.markdown("Volunteer updates, county reporting, and live megathreads.")
     st.link_button("Open r/VoteDEM ↗", "https://www.reddit.com/r/VoteDEM/")
 
 with hub_cols[1]:
     st.markdown("### r/elections")
-    st.markdown("General results tracking, media calls, and community reporting.")
+    st.markdown("General results discussion, exit poll commentary, and media calls.")
     st.link_button("Open r/elections ↗", "https://www.reddit.com/r/elections/")
 
 with hub_cols[2]:
     st.markdown("### r/PoliticalDiscussion")
-    st.markdown("In-depth analysis of balance of power, exit polls, and margins.")
+    st.markdown("In-depth analysis of national swing, margins, and legislative control.")
     st.link_button("Open r/PoliticalDiscussion ↗", "https://www.reddit.com/r/PoliticalDiscussion/")
