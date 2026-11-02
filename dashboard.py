@@ -8,7 +8,7 @@ from streamlit_autorefresh import st_autorefresh
 st.set_page_config(page_title="2026 Election Dashboard", layout="wide", page_icon="🗳️")
 
 st.title("🗳️ 2026 Election Tracker Dashboard")
-st.markdown("Live updates from major forecasters, state election portals, Bluesky analysts, and Reddit discussions.")
+st.markdown("Live updates from major forecasters, state election portals, and Bluesky election analysts.")
 
 # Auto-refresh logic (starts at 5:00 PM local time)
 now = datetime.now()
@@ -56,25 +56,30 @@ for i, (state, url) in enumerate(sos_links.items()):
 
 st.divider()
 
-# 3. Live Bluesky Analyst Feeds (100% Free Public API, No Token Needed)
-st.subheader("🦋 Live Bluesky Analyst Feeds")
-st.caption("Direct from the Bluesky AT Protocol public endpoint — completely free and unauthenticated.")
+# 3. Live Bluesky Analyst Feeds (Completely Free & Open Public API)
+st.subheader("🦋 Live Election Analysts (via Bluesky)")
+st.caption("Latest breaking posts pulled directly from the open AT Protocol public network.")
 
 bsky_analysts = {
     "Nate Silver": "natesilver.bsky.social",
     "Dave Wasserman": "redistrict.bsky.social",
     "Simon Rosenberg": "simonwdc.bsky.social",
-    "Decision Desk HQ": "decisiondeskhq.bsky.social"
+    "Decision Desk HQ": "decisiondeskhq.bsky.social",
+    "G. Elliott Morris": "gelliottmorris.bsky.social",
+    "Inside Elections": "insideelections.bsky.social"
 }
 
-bsky_cols = st.columns(len(bsky_analysts))
+# Display in a clean 3x2 grid
+analyst_items = list(bsky_analysts.items())
+row1 = st.columns(3)
+row2 = st.columns(3)
+all_cols = row1 + row2
 
-for idx, (name, handle) in enumerate(bsky_analysts.items()):
-    with bsky_cols[idx]:
-        st.markdown(f"**{name}**")
-        st.caption(f"@{handle}")
+for idx, (name, handle) in enumerate(analyst_items):
+    with all_cols[idx]:
+        st.markdown(f"### {name}")
+        st.caption(f"[@{handle}](https://bsky.app/profile/{handle})")
         try:
-            # Public endpoint: no auth, no tokens
             api_url = f"https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor={handle}&limit=3&filter=posts_no_replies"
             r = requests.get(api_url, timeout=5)
             if r.status_code == 200:
@@ -89,49 +94,28 @@ for idx, (name, handle) in enumerate(bsky_analysts.items()):
                 else:
                     st.info("No recent top-level posts.")
             else:
-                st.warning("Feed currently unavailable.")
-        except Exception as e:
-            st.error("Error loading feed.")
+                st.warning(f"Feed unavailable (HTTP {r.status_code})")
+        except Exception:
+            st.error("Error retrieving feed.")
 
 st.divider()
 
-# 4. Live Reddit Election Hubs (RSS Feeds - Bypasses Datacenter IP 429 Blocks)
-import xml.etree.ElementTree as ET
+# 4. Direct Discussion Hubs (Safe from 429 IP Blocks)
+st.subheader("💬 Community Election Hubs")
+st.caption("Direct links to active live-threads and election communities.")
 
-st.subheader("💬 Live Reddit Communities")
-st.caption("Latest breaking submissions from top election discussion subreddits.")
+hub_cols = st.columns(3)
+with hub_cols[0]:
+    st.markdown("### r/VoteDEM")
+    st.markdown("Discussion, canvassing reports, and live election night megathreads.")
+    st.link_button("Open r/VoteDEM ↗", "https://www.reddit.com/r/VoteDEM/")
 
-subreddits = {
-    "r/VoteDEM": "VoteDEM",
-    "r/fivethirtyeight": "538",
-    "r/PoliticalDiscussion": "PoliticalDiscussion",
-    "r/politics": "Politics"
-}
+with hub_cols[1]:
+    st.markdown("### r/elections")
+    st.markdown("General results tracking, media calls, and community reporting.")
+    st.link_button("Open r/elections ↗", "https://www.reddit.com/r/elections/")
 
-reddit_cols = st.columns(len(subreddits))
-headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-
-for idx, (sub_title, sub_name) in enumerate(subreddits.items()):
-    with reddit_cols[idx]:
-        st.markdown(f"**{sub_title}**")
-        try:
-            url = f"https://www.reddit.com/r/{sub_name}/new.rss"
-            r = requests.get(url, headers=headers, timeout=5)
-            if r.status_code == 200:
-                root = ET.fromstring(r.content)
-                # Atom feed entries namespace
-                namespace = {'atom': 'http://www.w3.org/2005/Atom'}
-                entries = root.findall('atom:entry', namespace)
-                
-                if entries:
-                    for entry in entries[:3]:
-                        title = entry.find('atom:title', namespace).text
-                        link = entry.find('atom:link', namespace).attrib.get('href', '#')
-                        st.markdown(f"• [{title}]({link})")
-                else:
-                    st.info("No recent posts found.")
-            else:
-                st.warning(f"Reddit feed unavailable (Code {r.status_code}).")
-        except Exception:
-            st.error("Error loading subreddit.")
-
+with hub_cols[2]:
+    st.markdown("### r/PoliticalDiscussion")
+    st.markdown("In-depth analysis of balance of power, exit polls, and margins.")
+    st.link_button("Open r/PoliticalDiscussion ↗", "https://www.reddit.com/r/PoliticalDiscussion/")
