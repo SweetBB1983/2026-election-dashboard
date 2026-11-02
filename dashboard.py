@@ -115,14 +115,14 @@ hub_cols = st.columns(3)
 with hub_cols[0]:
     st.markdown("### r/VoteDEM")
     st.markdown("Volunteer updates, county reporting, and live megathreads.")
-    st.link_button("Open r/VoteDEM ↗", "https://www.reddit.com/r/VoteDEM/")
+    st.link_button("Open r/VoteDEM ↗", "https://old.reddit.com/r/VoteDEM/")
 
 with hub_cols[1]:
-    st.markdown("### r/elections")
+    st.markdown("### r/fivethirtyeight")
     st.markdown("General results discussion, exit poll commentary, and media calls.")
-    st.link_button("Open r/elections ↗", "https://www.reddit.com/r/elections/")
+    st.link_button("Open r/fivethirtyeight ↗", "https://old.reddit.com/r/fivethirtyeight")
 
 with hub_cols[2]:
     st.markdown("### r/PoliticalDiscussion")
     st.markdown("In-depth analysis of national swing, margins, and legislative control.")
-    st.link_button("Open r/PoliticalDiscussion ↗", "https://www.reddit.com/r/PoliticalDiscussion/")
+    st.link_button("Open r/PoliticalDiscussion ↗", "https://old.reddit.com/r/PoliticalDiscussion/")
