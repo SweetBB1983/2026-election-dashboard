@@ -78,7 +78,7 @@ selected_name = st.selectbox("Choose an analyst feed:", list(analysts.keys()))
 selected_handle = analysts[selected_name]
 
 # Secure input for the API Bearer Token
-bearer_token = st.text_input("Enter your X API Bearer Token to view live tweets:", type="password")
+bearer_token = st.text_input("AAAAAAAAAAAAAAAAAAAAAN%2B4AAIAAAAAqrVyx9M9pWqVNFxQoEpnKeB7iUg%3DiWJscQhyflYz39SEGsEJU53sm3o70jz8XhXEuQnA8FCF14XpAi", type="password")
 
 if bearer_token:
     headers = {"Authorization": f"Bearer {bearer_token}"}
