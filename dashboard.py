@@ -10,7 +10,7 @@ from streamlit_autorefresh import st_autorefresh
 st.set_page_config(page_title="2026 Election Dashboard", layout="wide", page_icon="🗳️")
 
 st.title("🗳️ 2026 Election Tracker Dashboard")
-st.markdown("Live updates from major forecasters, state election portals, wire service feeds, and Bluesky election analysts.")
+st.markdown("Live updates from major forecasters, state election portals, wire service feeds, Bluesky analysts, and Reddit megathreads.")
 
 # Auto-refresh logic (starts at 5:00 PM local time)
 now = datetime.now()
@@ -130,63 +130,4 @@ sos_links = {
     "Wisconsin": "https://elections.wi.gov/",
     "Arizona": "https://results.arizona.vote/",
     "Nevada": "https://silverstateelection.nv.gov/",
-    "Georgia": "https://results.enr.clarityelections.com/GA/",
-    "North Carolina": "https://er.ncsbe.gov/",
-    "Ohio": "https://liveresults.ohiosos.gov/",
-    "Texas": "https://results.texas-election.com/",
-    "Florida": "https://floridaelectionwatch.gov/"
-}
-cols = st.columns(5)
-for i, (state, url) in enumerate(sos_links.items()):
-    cols[i % 5].markdown(f"**[{state}]({url})**")
-
-st.divider()
-
-# ---------------------------------------------------------
-# 5. Live Bluesky Analyst Feeds (12 Tracked Prognosticators)
-# ---------------------------------------------------------
-st.subheader("🦋 Live Election Analysts & Handicappers (via Bluesky)")
-st.caption("Latest breaking posts pulled live via Bluesky's free, unauthenticated AT Protocol public API.")
-
-bsky_analysts = {
-    "Cook Political Report": "cookpolitical.com",
-    "Decision Desk HQ": "decisiondeskhq.bsky.social",
-    "Dave Wasserman": "redistrict.bsky.social",
-    "Kyle Kondik (Sabato's Crystal Ball)": "kkondik.bsky.social",
-    "Geoffrey Skelley (DDHQ)": "geoffreyskelley.com",
-    "Jacob Rubashkin (Inside Elections)": "rubashkin.bsky.social",
-    "G. Elliott Morris (50+1)": "gelliottmorris.com",
-    "Nate Silver": "natesilver.bsky.social",
-    "Taniel (Bolts Mag)": "taniel.bsky.social",
-    "Adam Carlson": "admcrlsn.bsky.social",
-    "Kyle Griffin": "kylegriffin1.bsky.social",
-    "Simon Rosenberg": "simonwdc.bsky.social"
-}
-
-analyst_items = list(bsky_analysts.items())
-cols = st.columns(3)
-
-for idx, (name, handle) in enumerate(analyst_items):
-    col = cols[idx % 3]
-    with col:
-        st.markdown(f"#### {name}")
-        st.caption(f"[@{handle}](https://bsky.app/profile/{handle})")
-        try:
-            api_url = f"https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor={handle}&limit=3&filter=posts_no_replies"
-            r = requests.get(api_url, timeout=5)
-            if r.status_code == 200:
-                data = r.json()
-                feed = data.get("feed", [])
-                if feed:
-                    post_record = feed[0].get("post", {}).get("record", {})
-                    post_text = post_record.get("text", "No text found.")
-                    created_at = post_record.get("createdAt", "")[:16].replace("T", " ")
-                    st.info(f"{post_text}\n\n*🕒 {created_at} UTC*")
-                    st.link_button("View on Bluesky ↗", f"https://bsky.app/profile/{handle}")
-                else:
-                    st.info("No recent posts found.")
-            else:
-                st.warning(f"Feed unavailable (HTTP {r.status_code})")
-        except Exception:
-            st.error("Error retrieving feed.")
-        st.write("")
+    "Georgia": "
