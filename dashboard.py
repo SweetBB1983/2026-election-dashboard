@@ -1,42 +1,88 @@
-import streamlit as st
-import pandas as pd
-import requests
+import time as pytime
 import urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import datetime, time
-from streamlit_autorefresh import st_autorefresh
+from zoneinfo import ZoneInfo
 
-# Page configuration
+import pandas as pd
+import requests
+import streamlit as st
+
+# Page configuration must be the first Streamlit command
 st.set_page_config(page_title="2026 Election Dashboard", layout="wide", page_icon="🗳️")
 
 st.title("🗳️ 2026 Election Tracker Dashboard")
 st.markdown("Live updates from major forecasters, state election portals, wire service feeds, Bluesky analysts, and Reddit megathreads.")
 
-# Auto-refresh logic (starts at 5:00 PM local time)
-now = datetime.now()
-refresh_start_time = time(17, 0)
+# ---------------------------------------------------------
+# Timezone & Auto-Refresh Controls (No External Component Needed)
+# ---------------------------------------------------------
+ctrl_col1, ctrl_col2, ctrl_col3 = st.columns([2, 2, 1])
 
-if now.time() >= refresh_start_time:
-    st.success("🔴 **Live Update Mode Active** (Auto-refreshing every 60 seconds)")
-    st_autorefresh(interval=60000, key="data_refresh")
+with ctrl_col1:
+    tz_label = st.selectbox(
+        "Dashboard Timezone:",
+        ["US/Eastern", "US/Central", "US/Mountain", "US/Pacific"],
+        index=0
+    )
+
+current_tz = ZoneInfo(tz_label)
+now = datetime.now(current_tz)
+refresh_start_time = time(17, 0)  # 5:00 PM in selected timezone
+
+with ctrl_col2:
+    force_live = st.checkbox("Force Live 60s Auto-Refresh Now", value=False)
+
+with ctrl_col3:
+    if st.button("🔄 Refresh Now"):
+        st.rerun()
+
+is_live_mode = force_live or (now.time() >= refresh_start_time)
+
+if is_live_mode:
+    st.success(f"🔴 **Live Update Mode Active** — Refreshing automatically every 60 seconds (Current time: {now.strftime('%I:%M:%S %p %Z')})")
 else:
-    st.warning("⏳ *Live minute-by-minute auto-refresh will begin at 5:00 PM.*")
+    st.warning(f"⏳ *Waiting for 5:00 PM ({tz_label}) to start automatic 60-second updates. Current time: {now.strftime('%I:%M:%S %p %Z')} (Check the box above to start early).*")
 
 # ---------------------------------------------------------
-# 1. Forecasters Table
+# 1. Forecasters Comparison Table
 # ---------------------------------------------------------
-st.subheader("📊 Major Forecaster Projections")
+st.subheader("📊 Major Forecaster Trackers (2026 Senate & House)")
 forecasters = {
-    "Decision Desk HQ": {"Senate Forecast": "Lean Dem (65% Prob)", "House Forecast": "Lean Dem (84% Prob)", "House Seats": 241},
-    "G. Elliott Morris (50+1)": {"Senate Forecast": "Lean Rep (94% Prob)", "House Forecast": "Likely Dem (99% Prob)", "House Seats": 240},
-    "Cook Political Report": {"Senate Forecast": "Awaiting Live API", "House Forecast": "Awaiting Live API", "House Seats": "-"},
-    "Sabato's Crystal Ball": {"Senate Forecast": "Awaiting Live API", "House Forecast": "Awaiting Live API", "House Seats": "-"},
-    "Inside Elections": {"Senate Forecast": "Awaiting Live API", "House Forecast": "Awaiting Live API", "House Seats": "-"},
-    "Race to the WH": {"Senate Forecast": "Awaiting Live API", "House Forecast": "Awaiting Live API", "House Seats": "-"},
+    "Decision Desk HQ": {
+        "Senate Coverage": "Live Race Calls & Precinct Returns",
+        "House Coverage": "All 435 Districts Tracked",
+        "Update Feed": "Active via Bluesky & Live Desk"
+    },
+    "Cook Political Report": {
+        "Senate Coverage": "Battleground Race Ratings",
+        "House Coverage": "Competitive District Ratings",
+        "Update Feed": "Active via Bluesky (@cookpolitical.com)"
+    },
+    "Sabato's Crystal Ball": {
+        "Senate Coverage": " Crystal Ball Senate Ratings",
+        "House Coverage": "Crystal Ball House Ratings",
+        "Update Feed": "Active via Kyle Kondik (@kkondik.bsky.social)"
+    },
+    "Inside Elections": {
+        "Senate Coverage": "Baseline & Toss-Up Ratings",
+        "House Coverage": "District-by-District Handicapping",
+        "Update Feed": "Active via Jacob Rubashkin (@rubashkin.bsky.social)"
+    },
+    "G. Elliott Morris (50+1)": {
+        "Senate Coverage": "Probabilistic Senate Model",
+        "House Coverage": "Seat Distribution & Generic Ballot",
+        "Update Feed": "Active via Bluesky (@gelliottmorris.com)"
+    },
+    "Race to the WH": {
+        "Senate Coverage": "Polling Averages & Win Probabilities",
+        "House Coverage": "District Forecast Simulations",
+        "Update Feed": "Election Night Model Updates"
+    },
 }
 df_forecasters = pd.DataFrame.from_dict(forecasters, orient="index")
 st.dataframe(df_forecasters, use_container_width=True)
-st.caption(f"Last updated: {now.strftime('%I:%M:%S %p')}")
+st.caption(f"Last updated: {now.strftime('%I:%M:%S %p %Z')}")
 
 st.divider()
 
@@ -44,7 +90,7 @@ st.divider()
 # 2. Live Wire Service & Election Headlines (Google News RSS)
 # ---------------------------------------------------------
 st.subheader("📰 Live Wire & Election Night Headlines")
-st.caption("Pulled dynamically via free Google News RSS search operators (AP, Reuters, NPR, PBS).")
+st.caption("Pulled dynamically via Google News RSS search operators (AP, Reuters, NPR, PBS).")
 
 wire_queries = {
     "Associated Press (AP)": 'site:apnews.com ("Senate" OR "House" OR "Election") when:1d',
@@ -194,7 +240,7 @@ for idx, (name, handle) in enumerate(analyst_items):
 st.divider()
 
 # ---------------------------------------------------------
-# 6. Restored Reddit Election Hubs & Live Megathreads
+# 6. Reddit Election Communities & Live Megathreads
 # ---------------------------------------------------------
 st.subheader("💬 Reddit Election Communities & Live Megathreads")
 st.caption("Live thread feeds (via RSS-to-JSON proxy) and direct one-click links to active election hubs.")
@@ -205,16 +251,16 @@ reddit_hubs = [
         "sub": "VoteDEM",
         "desc": "Volunteer updates, county reporting, and live Election Day discussion.",
         "sub_url": "https://www.reddit.com/r/VoteDEM/",
-        "megathread_label": "Nov 3 Election Day Thread ↗",
-        "megathread_url": "https://www.reddit.com/r/VoteDEM/comments/1xmq0di/daily_discussion_thread_november_3_2026_today_is/"
+        "megathread_label": "Open r/VoteDEM Megathreads ↗",
+        "megathread_url": "https://www.reddit.com/r/VoteDEM/hot/"
     },
     {
         "title": "r/fivethirtyeight",
         "sub": "fivethirtyeight",
         "desc": "Polling averages, early vote modeling, and data-driven race calls.",
         "sub_url": "https://www.reddit.com/r/fivethirtyeight/",
-        "megathread_label": "2026 Midterms Megathread ↗",
-        "megathread_url": "https://www.reddit.com/r/fivethirtyeight/comments/1xmk4te/2026_midterms_election_megathread/"
+        "megathread_label": "Open r/fivethirtyeight Hot Threads ↗",
+        "megathread_url": "https://www.reddit.com/r/fivethirtyeight/hot/"
     },
     {
         "title": "r/elections",
@@ -240,8 +286,7 @@ for idx, hub in enumerate(reddit_hubs):
     with hub_cols[idx]:
         st.markdown(f"### {hub['title']}")
         st.caption(hub["desc"])
-        
-        # Attempt to pull the 3 newest threads via rss2json proxy to avoid 429 datacenter blocks
+
         try:
             rss_target = urllib.parse.quote_plus(f"https://www.reddit.com/r/{hub['sub']}/new.rss")
             proxy_url = f"https://api.rss2json.com/v1/api.json?rss_url={rss_target}"
@@ -254,7 +299,14 @@ for idx, hub in enumerate(reddit_hubs):
                     st.markdown(f"• [{t_title}]({t_link})")
         except Exception:
             pass
-            
+
         if hub["megathread_url"]:
             st.link_button(hub["megathread_label"], hub["megathread_url"])
         st.link_button(f"Open {hub['title']} ↗", hub["sub_url"])
+
+# ---------------------------------------------------------
+# 7. Pure-Python Auto-Refresh Trigger (Runs After Page Renders)
+# ---------------------------------------------------------
+if is_live_mode:
+    pytime.sleep(60)
+    st.rerun()
